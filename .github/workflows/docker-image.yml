@@ -1,0 +1,30 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: 
+      - main
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+        ports:
+          - 80:80
+          - 4040:4040
+          - 7171:8080
+          - 5151:5432
+          - 27018:27017
+          
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+
+    
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
