@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  express:
+    build: 
+      context: ./apifestivos 
+      dockerfile: Dockerfile-express 
+    ports:
+      - "4040:3030"
+    networks:
+      - redcalendario
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/festivos
+
+  mongodb:
+    image: mongo:latest           
+    ports:
+      - "27018:27017"
+    networks:
+      - redcalendario
+    volumes:
+      - ./apifechas/mongo-init:/docker-entrypoint-initdb.d
+
+  springboot:
+    build: 
+      context: ./apicalendariolaboral
+      dockerfile: Dockerfile-springboot 
+    ports:
+      - "7171:8080"
+    networks:
+      - redcalendario
+    depends_on:
+      - postgres
+      - express
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/calendariolaboral
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      EXPRESS_SERVICE_URL: http://express:3030
+
+  postgres:
+    build: 
+      context: ./apicalendariolaboral
+      dockerfile: Dockerfile-postgres 
+    ports:
+      - "5151:5432"
+    networks:
+      - redcalendario
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: CalendarioLaboral
+
+  
+
+networks:
+  redcalendario:
+    driver: bridge
